@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080b14">
+  <meta name="description" content="Roblox proximity voice and live player radar">
+  <title>NEARBY — Roblox Proximity Voice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="NEARBY home">
+        <span class="brand-mark"><i></i><i></i><i></i></span>
+        <span class="brand-name">NEARBY<span class="brand-dot">.</span></span>
+      </a>
+
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="#overview"><span class="nav-icon">◈</span> نظرة عامة</a>
+        <a class="nav-link" href="#radar"><span class="nav-icon">◎</span> الرادار المباشر</a>
+        <a class="nav-link" href="#connections"><span class="nav-icon">⌘</span> ربط الحسابات</a>
+        <a class="nav-link" href="#audio"><span class="nav-icon">♫</span> إعدادات الصوت</a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-glow"></div>
+        <span class="tiny-kicker">VOICE STATUS</span>
+        <div class="sidebar-status"><span class="status-dot"></span> النظام جاهز للربط</div>
+        <p>اربط حسابك وادخل سيرفر لعبتك لبدء التجربة.</p>
+      </div>
+      <div class="sidebar-footer">
+        <span class="footer-orb"></span>
+        <span>NEARBY SYSTEMS</span>
+        <span class="version">v1.0</span>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb"><span>NEARBY</span><b>/</b><strong>لوحة التحكم</strong></div>
+        <div class="topbar-actions">
+          <span class="secure-label"><span>●</span> اتصال محلي تجريبي</span>
+          <button class="icon-button" id="refreshButton" title="تحديث الحالة" aria-label="تحديث">↻</button>
+          <div class="avatar-placeholder">G</div>
+        </div>
+      </header>
+
+      <section class="hero" id="overview">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> PROXIMITY VOICE PLATFORM</div>
+          <h1>صوتك أقرب.<br><span>عالمك أوسع.</span></h1>
+          <p>منصة الصوت المكاني للاعبي Roblox. اربط هويتك، ادخل عالمك، وتواصل مع اللاعبين القريبين منك.</p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#connections">ابدأ ربط حسابك <span>←</span></a>
+            <a class="text-button" href="#radar">استكشف الرادار <span>↙</span></a>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="hero-orbit orbit-a"></div>
+          <div class="hero-orbit orbit-b"></div>
+          <div class="hero-orbit orbit-c"></div>
+          <div class="hero-core"><span>NV</span><i></i></div>
+          <div class="orbit-node node-a"></div>
+          <div class="orbit-node node-b"></div>
+          <div class="orbit-node node-c"></div>
+          <div class="orbit-node node-d"></div>
+          <div class="hero-art-label label-a">LIVE SPATIAL AUDIO</div>
+          <div class="hero-art-label label-b">CONNECTED WORLD</div>
+        </div>
+        <div class="hero-bottom-line"><span>01 / CONNECT</span><span>02 / DISCOVER</span><span>03 / TALK</span></div>
+      </section>
+
+      <section class="stats-grid" aria-label="System status">
+        <article class="stat-card">
+          <div class="stat-top"><span>حالة الاتصال</span><span class="stat-icon cyan">⌁</span></div>
+          <strong id="connectionStatus">غير متصل</strong>
+          <small><span class="mini-dot muted" id="connectionDot"></span> اتصال الموقع بالسيرفر</small>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span>حساب Roblox</span><span class="stat-icon purple">◉</span></div>
+          <strong id="robloxStatus">غير مربوط</strong>
+          <small>إثبات ملكية الحساب</small>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span>اللاعبون حولك</span><span class="stat-icon green">⌖</span></div>
+          <strong id="playerCount">0</strong>
+          <small>في نفس سيرفر اللعبة</small>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span>نظام الصوت</span><span class="stat-icon orange">♫</span></div>
+          <strong>قيد التجهيز</strong>
+          <small>WebRTC — المرحلة القادمة</small>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel radar-panel" id="radar">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow small">LIVE ENVIRONMENT</div>
+              <h2>الرادار المباشر</h2>
+            </div>
+            <span class="live-pill"><i></i> LIVE</span>
+          </div>
+          <div class="radar-stage">
+            <div class="radar-sweep"></div>
+            <div class="radar-ring ring-one"></div>
+            <div class="radar-ring ring-two"></div>
+            <div class="radar-ring ring-three"></div>
+            <div class="radar-cross cross-x"></div>
+            <div class="radar-cross cross-y"></div>
+            <div class="radar-center"><span>YOU</span></div>
+            <div id="radarPlayers" class="radar-players"></div>
+            <div class="radar-label radar-label-top">100 STUDS</div>
+            <div class="radar-label radar-label-bottom">RANGE: 100</div>
+          </div>
+          <div class="radar-legend">
+            <span><i class="legend-you"></i> موقعك</span>
+            <span><i class="legend-player"></i> لاعب قريب</span>
+            <span><i class="legend-far"></i> لاعب بعيد</span>
+          </div>
+          <div class="radar-note" id="radarMessage">أدخل Server ID لعرض لاعبي نفس سيرفر Roblox.</div>
+        </article>
+
+        <article class="panel connection-panel" id="connections">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow small">IDENTITY CENTER</div>
+              <h2>ربط الحسابات</h2>
+            </div>
+            <span class="panel-number">01</span>
+          </div>
+
+          <div class="connect-card roblox-card">
+            <div class="connect-brand roblox-brand">R</div>
+            <div class="connect-info">
+              <strong>Roblox</strong>
+              <span id="robloxSubstatus">اربط حسابك لإثبات هويتك</span>
+            </div>
+            <span class="connect-state" id="robloxBadge">غير مربوط</span>
+          </div>
+
+          <form id="robloxStartForm" class="link-form">
+            <label for="robloxUsername">اسم المستخدم في Roblox</label>
+            <div class="input-wrap">
+              <span>@</span>
+              <input id="robloxUsername" name="username" autocomplete="off" maxlength="32" placeholder="RobloxUsername" required>
+            </div>
+            <button class="action-button" type="submit" id="startVerification">إنشاء كود التحقق <span>↗</span></button>
+          </form>
+
+          <div class="verification-box hidden" id="verificationBox">
+            <div class="verification-title"><span class="step-number">1</span> انسخ الكود إلى وصف حسابك</div>
+            <div class="code-row">
+              <code id="verificationCode">RV-XXXXXX</code>
+              <button type="button" class="copy-button" id="copyCode">نسخ</button>
+            </div>
+            <a class="profile-link" id="profileLink" href="#" target="_blank" rel="noopener">فتح ملف Roblox الشخصي ↗</a>
+            <div class="verification-title second-step"><span class="step-number">2</span> بعد حفظ الوصف اضغط تحقق</div>
+            <button class="verify-button" id="verifyButton" type="button">تحقق من الحساب</button>
+            <p class="expiry-note" id="expiryNote">صلاحية الكود 10 دقائق</p>
+          </div>
+
+          <div class="connect-card discord-card">
+            <div class="connect-brand discord-brand">◉</div>
+            <div class="connect-info">
+              <strong>Discord</strong>
+              <span>تسجيل الدخول عبر Discord OAuth2</span>
+            </div>
+            <span class="connect-state pending">لاحقاً</span>
+          </div>
+          <p class="integration-note">ربط Discord يحتاج إعداد تطبيق OAuth2 من Discord Developer Portal وإضافة Client ID وClient Secret على السيرفر. لا تضع الأسرار في المتصفح.</p>
+        </article>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel server-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow small">GAME SESSION</div>
+              <h2>جلسة Roblox</h2>
+            </div>
+            <span class="panel-number">02</span>
+          </div>
+          <label for="serverId">معرّف سيرفر اللعبة</label>
+          <div class="input-wrap server-input">
+            <span>⌘</span>
+            <input id="serverId" placeholder="أدخل Server ID" autocomplete="off">
+          </div>
+          <button class="action-button secondary-action" id="joinServerButton" type="button">الاتصال بالرادار <span>↗</span></button>
+          <p class="helper-text">يجب أن تكون داخل نفس سيرفر Roblox الذي يرسل بيانات اللاعبين إلى السيرفر الخارجي.</p>
+        </article>
+
+        <article class="panel audio-panel" id="audio">
+          <div class="panel-heading">
+            <div>
+              <div class="eyebrow small">SPATIAL SOUND</div>
+              <h2>الصوت المكاني</h2>
+            </div>
+            <span class="coming-soon">COMING NEXT</span>
+          </div>
+          <div class="audio-visual">
+            <div class="audio-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="audio-mic">♫</div>
+          </div>
+          <div class="audio-controls">
+            <button class="audio-button" disabled>تشغيل المايك</button>
+            <span>الصوت غير مفعّل حتى اكتمال WebRTC</span>
+          </div>
+        </article>
+      </section>
+
+      <footer class="main-footer">
+        <span>NEARBY<span class="brand-dot">.</span> <small>PROXIMITY VOICE PLATFORM</small></span>
+        <span>BUILT FOR THE GAME, CONNECTED BY SOUND.</span>
+      </footer>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
